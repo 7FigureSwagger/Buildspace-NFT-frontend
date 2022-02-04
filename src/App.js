@@ -9,11 +9,12 @@ const TWITTER_HANDLE = "_buildspace";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = "";
 const TOTAL_MINT_COUNT = 50;
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const CONTRACT_ADDRESS = "0x18c15FFBfC0e6cDe2646437854b2DC7F073319f2";
 
 const App = () => {
 	// Hold selected MetaMask account in state
 	const [currentAccount, setCurrentAccount] = useState("");
+	const [nftCount, setNftCount] = useState();
 
 	// Make sure we have access to window.ethereum
 	const checkMetaMaskConnect = async () => {
@@ -121,6 +122,8 @@ const App = () => {
 					signer
 				);
 
+				console.log(connectedContract, provider);
+
 				// Capture event when thrown by contract
 				// Very similar to webhooks
 				connectedContract.on("NewNFTMinted", (from, tokenId) => {
@@ -129,9 +132,33 @@ const App = () => {
 					alert(
 						`Hey there! We've minted your NFT and sent it to your wallet. It may be blank right now. It can take a max of 10 min to show up on OpenSea. Here's the link: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId.toNumber()}`
 					);
+					getCount();
 				});
-
 				console.log("Event listener set!");
+			} else {
+				console.log("Ethereum object doesn't exist!");
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const getCount = async () => {
+		try {
+			const { ethereum } = window;
+
+			if (ethereum) {
+				const provider = new ethers.providers.Web3Provider(ethereum);
+				const connectedContract = new ethers.Contract(
+					CONTRACT_ADDRESS,
+					ehrabNFT.abi,
+					// Must use provider directly rather than signer to access view functions!!
+					provider
+				);
+
+				// Check how many NFTs have been minted, and set into state
+				let counter = await connectedContract.nftCount();
+				setNftCount(counter.toString());
 			} else {
 				console.log("Ethereum object doesn't exist!");
 			}
@@ -152,6 +179,7 @@ const App = () => {
 
 	useEffect(() => {
 		checkMetaMaskConnect();
+		getCount();
 	}, []);
 
 	return (
@@ -173,14 +201,23 @@ const App = () => {
 						</button>
 					)}
 				</div>
-				<div className="footer-container">
-					<img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
-					<a
-						className="footer-text"
-						href={TWITTER_LINK}
-						target="_blank"
-						rel="noreferrer"
-					>{`built on @${TWITTER_HANDLE}`}</a>
+				<div id="footer-div">
+					<div className="mint-count">
+						{nftCount}/50 <small>NFT's minted so far</small>
+					</div>
+					<div className="footer-container">
+						<img
+							alt="Twitter Logo"
+							className="twitter-logo"
+							src={twitterLogo}
+						/>
+						<a
+							className="footer-text"
+							href={TWITTER_LINK}
+							target="_blank"
+							rel="noreferrer"
+						>{`built on @${TWITTER_HANDLE}`}</a>
+					</div>
 				</div>
 			</div>
 		</div>
