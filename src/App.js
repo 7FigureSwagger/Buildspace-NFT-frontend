@@ -7,9 +7,9 @@ import ehrabNFT from "./utils/EhrabNFT.json";
 // Constants
 const TWITTER_HANDLE = "_buildspace";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-const OPENSEA_LINK = "";
+const OPENSEA_LINK = "https://testnets.opensea.io/0xb46344382744eccaa1e9659fd39b1e6fdcbf1ef0";
 const TOTAL_MINT_COUNT = 50;
-const CONTRACT_ADDRESS = "0x18c15FFBfC0e6cDe2646437854b2DC7F073319f2";
+const CONTRACT_ADDRESS = "0xB46344382744EccAa1e9659fD39b1E6FdcBf1ef0";
 
 const App = () => {
 	// Hold selected MetaMask account in state
@@ -42,6 +42,25 @@ const App = () => {
 			console.log("No authorized account found");
 		}
 	};
+
+	// Check to make sure we are connected to Rinkeby!
+	const checkChainId = async () => {
+		const { ethereum } = window;
+
+		try {
+			let chainId = await ethereum.request({ method: 'eth_chainId' });
+			console.log('Connected to chain ' + chainId);
+
+			// Hex string of the Rinkeby test network
+			const rinkebyChainId = "0x4";
+			if (chainId !== rinkebyChainId) {
+				alert("You are not connected to the Rinkeby Test Network!");
+			}
+
+		} catch (error) {
+			console.log(error);
+		}
+	}
 
 	// Wallet connect method
 	const connectWallet = async () => {
@@ -179,6 +198,8 @@ const App = () => {
 
 	useEffect(() => {
 		checkMetaMaskConnect();
+		// Check for chain ID, in production, buttons should be disabled if the chain ID is incorrect!!
+		checkChainId();
 		getCount();
 	}, []);
 
@@ -203,8 +224,9 @@ const App = () => {
 				</div>
 				<div id="footer-div">
 					<div className="mint-count">
-						{nftCount}/50 <small>NFT's minted so far</small>
+						{nftCount}/{TOTAL_MINT_COUNT} <small>NFT's minted so far</small>
 					</div>
+					<div className="footer-text">View collection on <a href={OPENSEA_LINK}>OpenSea</a></div>
 					<div className="footer-container">
 						<img
 							alt="Twitter Logo"
